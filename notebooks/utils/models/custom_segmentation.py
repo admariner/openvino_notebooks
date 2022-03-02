@@ -61,9 +61,8 @@ class SegmentationModel(model.Model):
         Resize the image to network input dimensions and transpose to
         network input shape with N,C,H,W layout.
         """
-        meta = {}
         image = inputs[self.input_layer]
-        meta["frame"] = image
+        meta = {"frame": image}
         if image.shape[:2] != (self.image_height, self.image_width):
             image = cv2.resize(image, (self.image_width, self.image_height))
         if len(image.shape) == 3:
@@ -94,8 +93,6 @@ class SegmentationModel(model.Model):
             result_mask_ir = np.argmax(res, axis=0).astype(np.uint8)
         else:
             result_mask_ir = result_mask_ir.round().astype(np.uint8)
-        overlay = segmentation_map_to_overlay(
+        return segmentation_map_to_overlay(
             rgb_frame, result_mask_ir, alpha, colormap=self.colormap
         )
-
-        return overlay

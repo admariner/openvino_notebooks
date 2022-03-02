@@ -47,16 +47,14 @@ def load_image(path: str) -> np.ndarray:
     :param path: Local path name or URL to image.
     :return: image as BGR numpy array
     """
-    if path.startswith("http"):
-        # Set User-Agent to Mozilla because some websites block
-        # requests with User-Agent Python
-        request = urllib.request.Request(path, headers={"User-Agent": "Mozilla/5.0"})
-        response = urllib.request.urlopen(request)
-        array = np.asarray(bytearray(response.read()), dtype="uint8")
-        image = cv2.imdecode(array, -1)  # Loads the image as BGR
-    else:
-        image = cv2.imread(path)
-    return image
+    if not path.startswith("http"):
+        return cv2.imread(path)
+    # Set User-Agent to Mozilla because some websites block
+    # requests with User-Agent Python
+    request = urllib.request.Request(path, headers={"User-Agent": "Mozilla/5.0"})
+    response = urllib.request.urlopen(request)
+    array = np.asarray(bytearray(response.read()), dtype="uint8")
+    return cv2.imdecode(array, -1)
 
 
 class DownloadProgressBar(tqdm_notebook):
@@ -144,9 +142,8 @@ def download_file(
         if os.stat(filename).st_size >= urlobject_size:
             progress_callback.update(urlobject_size - progress_callback.n)
             progress_callback.refresh()
-    else:
-        if not silent:
-            print(f"'{filename}' already exists.")
+    elif not silent:
+        print(f"'{filename}' already exists.")
     return filename.resolve()
 
 
@@ -160,7 +157,7 @@ def download_ir_model(model_xml_url: str, destination_folder: str = None) -> str
                                files are saved to the current directory
     :return: path to downloaded xml model file
     """
-    model_bin_url = model_xml_url[:-4] + ".bin"
+    model_bin_url = f'{model_xml_url[:-4]}.bin'
     model_xml_path = download_file(
         model_xml_url, directory=destination_folder, show_progress=False
     )
@@ -338,10 +335,7 @@ class SegmentationMap(NamedTuple):
 
     def get_labels(self):
         labelnames = [label.name for label in self.labels]
-        if any(labelnames):
-            return labelnames
-        else:
-            return None
+        return labelnames if any(labelnames) else None
 
 
 # In[ ]:
@@ -574,9 +568,7 @@ def show_live_inference(ie, image_paths: List, model: model.Model, device: str):
     start_time = time.perf_counter()
 
     while next_frame_id < len(image_paths) - 1:
-        results = pipeline.get_result(next_frame_id_to_show)
-
-        if results:
+        if results := pipeline.get_result(next_frame_id_to_show):
             # Show next result from async pipeline
             result, meta = results
             display_handle = showarray(result, display_handle)
@@ -598,8 +590,7 @@ def show_live_inference(ie, image_paths: List, model: model.Model, device: str):
 
     # Show all frames that are in the pipeline after all images have been submitted
     while pipeline.has_completed_request():
-        results = pipeline.get_result(next_frame_id_to_show)
-        if results:
+        if results := pipeline.get_result(next_frame_id_to_show):
             result, meta = results
             display_handle = showarray(result, display_handle)
             next_frame_id_to_show += 1
@@ -641,22 +632,21 @@ def benchmark_model(model_path: os.PathLike,
     model_path = Path(model_path)
     if ("GPU" in device) and ("GPU" not in ie.available_devices):
         raise ValueError(f"A GPU device is not available. Available devices are: {ie.available_devices}")
-    else:
-        benchmark_command = f"benchmark_app -m {model_path} -d {device} -t {seconds} -api {api} -b {batch} -cdir {cache_dir}"
-        display(Markdown(f"**Benchmark {model_path.name} with {device} for {seconds} seconds with {api} inference**"));
-        display(Markdown(f"Benchmark command: `{benchmark_command}`"));
+    benchmark_command = f"benchmark_app -m {model_path} -d {device} -t {seconds} -api {api} -b {batch} -cdir {cache_dir}"
+    display(Markdown(f"**Benchmark {model_path.name} with {device} for {seconds} seconds with {api} inference**"));
+    display(Markdown(f"Benchmark command: `{benchmark_command}`"));
 
-        benchmark_output = get_ipython().run_line_magic('sx', '$benchmark_command')
-        benchmark_result = [line for line in benchmark_output
-                            if not (line.startswith(r"[") or line.startswith("  ") or line == "")]
-        print("\n".join(benchmark_result))
-        print()
-        if "MULTI" in device:
-            devices = device.replace("MULTI:","").split(",")
-            for single_device in devices:
-                print(f"{single_device} device: {ie.get_metric(device_name=single_device, metric_name='FULL_DEVICE_NAME')}")
-        else:
-            print(f"Device: {ie.get_metric(device_name=device, metric_name='FULL_DEVICE_NAME')}")
+    benchmark_output = get_ipython().run_line_magic('sx', '$benchmark_command')
+    benchmark_result = [line for line in benchmark_output
+                        if not (line.startswith(r"[") or line.startswith("  ") or line == "")]
+    print("\n".join(benchmark_result))
+    print()
+    if "MULTI" in device:
+        devices = device.replace("MULTI:","").split(",")
+        for single_device in devices:
+            print(f"{single_device} device: {ie.get_metric(device_name=single_device, metric_name='FULL_DEVICE_NAME')}")
+    else:
+        print(f"Device: {ie.get_metric(device_name=device, metric_name='FULL_DEVICE_NAME')}")
 
 
 # ## Checks and Alerts
@@ -721,11 +711,10 @@ def check_device(device: str) -> bool:
              a DeviceNotFoundAlert will be shown.
     """
     ie = IECore()
-    if device not in ie.available_devices:
-        DeviceNotFoundAlert(device)
-        return False
-    else:
+    if device in ie.available_devices:
         return True
+    DeviceNotFoundAlert(device)
+    return False
 
 
 def check_openvino_version(version: str) -> bool:

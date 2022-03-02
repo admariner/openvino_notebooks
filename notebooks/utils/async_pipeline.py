@@ -25,7 +25,7 @@ def parse_devices(device_string):
     colon_position = device_string.find(':')
     if colon_position != -1:
         device_type = device_string[:colon_position]
-        if device_type == 'HETERO' or device_type == 'MULTI':
+        if device_type in ['HETERO', 'MULTI']:
             comma_separated_devices = device_string[colon_position + 1:]
             devices = comma_separated_devices.split(',')
             for device in devices:
@@ -133,8 +133,7 @@ class AsyncPipeline:
         return None
 
     def get_result(self, id):
-        result = self.get_raw_result(id)
-        if result:
+        if result := self.get_raw_result(id):
             raw_result, meta, preprocess_meta = result
             return self.model.postprocess(raw_result, preprocess_meta), meta
         return None

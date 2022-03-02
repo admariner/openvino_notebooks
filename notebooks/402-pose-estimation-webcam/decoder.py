@@ -126,7 +126,7 @@ class OpenPoseDecoder:
                 pose_entry[kpt_a_id] = connection[0]
                 pose_entry[kpt_b_id] = connection[1]
                 pose_entry[-1] = 2
-                pose_entry[-2] = np.sum(all_keypoints[connection[0:2], 2]) + connection[2]
+                pose_entry[-2] = np.sum(all_keypoints[connection[:2], 2]) + connection[2]
                 pose_entries.append(pose_entry)
             elif pose_a_idx >= 0 and pose_b_idx >= 0 and pose_a_idx != pose_b_idx:
                 # Merge two poses are disjoint merge them, otherwise ignore connection.
@@ -148,7 +148,7 @@ class OpenPoseDecoder:
                 pose[kpt_b_id] = connection[1]
                 pose[-2] += connection[2]
                 pose[-1] += 1
-            elif pose_b_idx >= 0:
+            else:
                 # Add a new limb into pose.
                 pose = pose_entries[pose_b_idx]
                 if pose[kpt_a_id] < 0:
@@ -225,7 +225,7 @@ class OpenPoseDecoder:
             connections = list(zip(kpts_a[a_idx, 3].astype(np.int32),
                                    kpts_b[b_idx, 3].astype(np.int32),
                                    affinity_scores))
-            if len(connections) == 0:
+            if not connections:
                 continue
 
             # Update poses with new connections.
