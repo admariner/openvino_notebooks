@@ -23,16 +23,32 @@ USER root
 
 # Upgrade NodeJS > 12.0
 # Install dos2unix for line end conversion on Windows
-RUN curl -sL https://rpm.nodesource.com/setup_14.x | bash -  && \
-  yum remove -y nodejs && \
-  yum install -y nodejs mesa-libGL dos2unix libsndfile && \
-  yum -y update-minimal --security --sec-severity=Important --sec-severity=Critical --sec-severity=Moderate
+RUN dnf --disableplugin=subscription-manager remove -y nodejs && \
+  dnf --disableplugin=subscription-manager module -y reset nodejs && \
+  dnf --disableplugin=subscription-manager module -y enable nodejs:20 && \
+  dnf --disableplugin=subscription-manager install -y nodejs mesa-libGL dos2unix libsndfile && \
+  dnf --disableplugin=subscription-manager -y update-minimal --security --sec-severity=Important --sec-severity=Critical --sec-severity=Moderate
+
+# GPU drivers
+RUN dnf --disableplugin=subscription-manager install -y 'dnf-command(config-manager)' && \
+    dnf --disableplugin=subscription-manager config-manager --add-repo  https://repositories.intel.com/gpu/rhel/8.6/lts/2350/unified/intel-gpu-8.6.repo
+
+RUN rpm -ivh https://vault.centos.org/centos/8/AppStream/x86_64/os/Packages/mesa-filesystem-21.1.5-1.el8.x86_64.rpm && \
+    dnf --disableplugin=subscription-manager install --refresh -y \
+    intel-opencl intel-media intel-mediasdk libmfxgen1 libvpl2 \
+    level-zero intel-level-zero-gpu \
+    intel-metrics-library intel-igc-core intel-igc-cm \
+    libva libva-utils  intel-gmmlib && \
+    rpm -ivh http://mirror.centos.org/centos/8-stream/AppStream/x86_64/os/Packages/ocl-icd-2.2.12-1.el8.x86_64.rpm && \
+    rpm -ivh https://dl.fedoraproject.org/pub/epel/8/Everything/x86_64/Packages/c/clinfo-3.0.21.02.21-4.el8.x86_64.rpm
 
 # Copying in override assemble/run scripts
 COPY .docker/.s2i/bin /tmp/scripts
 # Copying in source code
 COPY .docker /tmp/src
 COPY .ci/patch_notebooks.py /tmp/scripts
+COPY .ci/validate_notebooks.py /tmp/scripts
+COPY .ci/ignore_treon_docker.txt /tmp/scripts
 
 # Git on Windows may convert line endings. Run dos2unix to enable
 # building the image when the scripts have CRLF line endings.

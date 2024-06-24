@@ -3,55 +3,55 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 name = "pypi"
 
+[[source]]
+url = "https://download.pytorch.org/whl/"
+verify_ssl = true
+name = "pytorch-wheels"
+
 [packages]
-aiohttp = ">=3.7.4"
 boto3 = "*"
-fastseg = "*"
 gdown = "*"
-geffnet = "==0.9.8"
-grpcio = "*"
-ipykernel = "==5.*"
-ipython = "==7.16.3"  # pin to avoid vulnerability
+ipykernel = ">=5.*"
+ipython = ">=7.16.3"  # pin to avoid vulnerability
 ipywidgets = "*"
-itkwidgets = "==0.23.1"
-jedi = "==0.17.2"
-jupyter-client = "<=7.2.0"
+jedi = ">=0.17.2"
 jupyter-nbrequirements = "*"
-jupyterhub = ">=1.5.0"
+jupyterhub = "==2.2.*"
 jupyterlab = "*"
 jupyterlab-git = "==0.30"
-matplotlib = "<3.4"
-monai = "*"
+librosa = ">=0.8.1"
+matplotlib = ">=3.4"
+monai = ">=0.9.1,<1.0.0"
 nbval = "*"
-nest-asyncio = "<=1.5.4"
-nltk = ">=3.6.4"
-nncf = {extras = ["torch", "tf"], version = ">=2.1.0"}
-openvino-dev = {extras = ["onnx"], version = "==2022.1.0"}
+notebook = "<7.0.0"
+nncf = "==2.9.0"
+numpy = ">=1.21.0"
+onnx = ">=1.11.0"
+opencv-python = "*"
+openvino-dev = {version = "==2024.0.0"}
+openvino-telemetry = "==2023.2.1"
 ovmsclient = "*"
-paddle2onnx = ">=0.6"
-paddlehub = "*"
-paddlenlp = "==2.0.8"  # pin to avoid conflict with requests
-paddlepaddle = "==2.2.*"
 Pillow = ">=8.3.2"
-ppgan = ">=2.1.0"
-PVGeo = "*"
+psutil = "*"
+pyclipper = ">=1.2.1"
 pygments = ">=2.7.4"
-pytorch_lightning = "*"
-pytube = "*"
-pyvista = "*"
+pytorch-lightning = "*"
+pytube = ">=12.1.0"
 rsa = ">=4.7"
-scikit-learn = ">=0.24.2"
+scikit-image = ">=0.19.2"
+scipy = "*"
+seaborn = ">=0.11.0"
 setuptools = ">56.0.0"
-sklearn = "*"
-supervisor = "==4.1.0"
-tensorflow_datasets = "*"
-tensorflow = ">=2.4.*" # pin before nncf update
-torch = "<=1.7.1+cpu,>=1.5.1+cpu"
-torchmetrics = "==0.6.2"
-torchvision = "<=0.8.2+cpu,>=0.6.1+cpu"
-transformers = "*"
-tqdm = "*"
-yaspin = "*"
+shapely = ">=1.7.1"
+supervisor = ">=4.1.0"
+tensorflow = ">=2.5,<=2.12"
+tensorflow-datasets = "==4.2.0"
+treon = "*"
+torch = {index = "pytorch-wheels", version = "==2.1.0+cpu"}
+torchaudio = {index = "pytorch-wheels", version = "==2.1.0+cpu"}
+torchmetrics = ">=0.11.0"
+torchvision = {index = "pytorch-wheels", version = "==0.16.0+cpu"}
+transformers = ">=4.21.1"
 
 [dev-packages]
 

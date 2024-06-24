@@ -1,7 +1,7 @@
 # Build Docker image and test notebooks in Docker image
 # Test script location: .docker/.s2i/bin/test
 
-name: docker_nbval
+name: docker_treon
 
 on:
   workflow_dispatch:
@@ -13,7 +13,8 @@ on:
     paths:
       - "Dockerfile"
       - ".docker/**"
-      - ".github/workflows/docker.yml"
+      - ".github/workflows/*.yml"
+      - '.github/workflows/.env'
       - 'notebooks/**.ipynb'
       - 'notebooks/**.py'
       - 'requirements.txt'
@@ -21,10 +22,12 @@ on:
   pull_request:
     branches:
     - 'main'
+    - 'develop'
     paths:
       - "Dockerfile"
       - ".docker/**"
-      - ".github/workflows/docker.yml"
+      - ".github/workflows/*.yml"
+      - '.github/workflows/.env'
       - 'notebooks/**.ipynb'
       - 'notebooks/**.py'
 
@@ -40,7 +43,14 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
-    - uses: actions/checkout@v2
+    - name: Maximize build space
+      run:  |
+            sudo rm -rf /usr/local/lib/android # will release about 10 GB if you don't need Android
+            sudo rm -rf /usr/share/dotnet # will release about 20GB if you don't need .NET
+            sudo rm -rf /opt/ghc
+            echo "Available storage:"
+            df -h
+    - uses: actions/checkout@v4
     - name: Build Docker image
       run: |
         docker build . -t openvino_notebooks
